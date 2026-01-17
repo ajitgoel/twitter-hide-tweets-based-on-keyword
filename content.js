@@ -1,6 +1,7 @@
 let settings = {
     hideImages: false,
     hideVideos: false,
+    grayscale: false,
     keywords: []
 };
 
@@ -9,6 +10,7 @@ function loadSettings() {
     chrome.storage.sync.get({
         hideImages: false,
         hideVideos: false,
+        grayscale: false,
         keywords: []
     }, function (items) {
         settings = items;
@@ -25,6 +27,13 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 });
 
 function applyFilters() {
+    // Apply grayscale filter to body
+    if (settings.grayscale) {
+        document.body.style.filter = 'grayscale(100%)';
+    } else {
+        document.body.style.filter = '';
+    }
+
     const tweets = document.querySelectorAll('article[data-testid="tweet"]');
     tweets.forEach(tweet => {
         filterTweet(tweet);

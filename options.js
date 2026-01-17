@@ -2,17 +2,19 @@
 function save_options() {
   const hideImages = document.getElementById('hideImages').checked;
   const hideVideos = document.getElementById('hideVideos').checked;
+  const grayscale = document.getElementById('grayscale').checked;
   const keywords = document.getElementById('keywords').value.split(',').map(k => k.trim()).filter(k => k !== "");
-  
+
   chrome.storage.sync.set({
     hideImages: hideImages,
     hideVideos: hideVideos,
+    grayscale: grayscale,
     keywords: keywords
-  }, function() {
+  }, function () {
     // Update status to let user know options were saved.
     const status = document.getElementById('status');
     status.textContent = 'Settings saved.';
-    setTimeout(function() {
+    setTimeout(function () {
       status.textContent = '';
     }, 1000);
   });
@@ -24,10 +26,12 @@ function restore_options() {
   chrome.storage.sync.get({
     hideImages: false,
     hideVideos: false,
+    grayscale: false,
     keywords: []
-  }, function(items) {
+  }, function (items) {
     document.getElementById('hideImages').checked = items.hideImages;
     document.getElementById('hideVideos').checked = items.hideVideos;
+    document.getElementById('grayscale').checked = items.grayscale;
     document.getElementById('keywords').value = items.keywords.join(', ');
   });
 }

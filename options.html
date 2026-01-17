@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter Content Filter Settings</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Twitter/X Content Filter</h1>
+        
+        <section class="settings-group">
+            <h2>Media Settings</h2>
+            <div class="setting-item">
+                <label for="hideImages">Hide Images</label>
+                <input type="checkbox" id="hideImages">
+            </div>
+            <div class="setting-item">
+                <label for="hideVideos">Hide Videos</label>
+                <input type="checkbox" id="hideVideos">
+            </div>
+        </section>
+
+        <section class="settings-group">
+            <h2>Keyword Filtering</h2>
+            <p class="description">Hide tweets containing these keywords (comma separated):</p>
+            <textarea id="keywords" placeholder="e.g. crypto, nft, politics"></textarea>
+        </section>
+
+        <div class="actions">
+            <button id="save">Save Settings</button>
+            <span id="status"></span>
+        </div>
+    </div>
+    <script src="options.js"></script>
+</body>
+</html>

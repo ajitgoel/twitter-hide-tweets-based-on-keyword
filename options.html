@@ -17,6 +17,7 @@
             <button class="tab-btn active" data-tab="twitter">Twitter / X</button>
             <button class="tab-btn" data-tab="youtube">YouTube</button>
             <button class="tab-btn" data-tab="general">General Settings</button>
+            <button class="tab-btn" data-tab="data">Data Management</button>
         </nav>
 
         <main class="tab-content">
@@ -67,6 +68,22 @@
                     <div class="setting-item">
                         <label for="grayscale">Grayscale Mode (All Sites)</label>
                         <input type="checkbox" id="grayscale">
+                    </div>
+                </section>
+            </div>
+
+            <!-- Data Management -->
+            <div id="data" class="tab-pane">
+                <section class="settings-group">
+                    <h2>Backup & Restore</h2>
+                    <p class="description">Export your settings to a file or import them from a previously saved backup.
+                    </p>
+                    <div class="data-actions">
+                        <button id="export" class="secondary-btn">Export Settings (JSON)</button>
+                        <div class="import-wrapper">
+                            <button id="import-trigger" class="secondary-btn">Import Settings (JSON)</button>
+                            <input type="file" id="import-file" accept=".json" style="display: none;">
+                        </div>
                     </div>
                 </section>
             </div>

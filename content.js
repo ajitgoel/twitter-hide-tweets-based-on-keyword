@@ -36,18 +36,34 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 });
 
 function applyFilters() {
-    // Apply grayscale filter to body (Global)
-    if (settings.grayscale) {
-        document.body.style.filter = 'grayscale(100%)';
-    } else {
-        document.body.style.filter = '';
-    }
+    // Apply grayscale filter (Global) - use more robust injection
+    applyGrayscaleStyle(settings.grayscale);
 
     if (isTwitter) {
         const tweets = document.querySelectorAll('article[data-testid="tweet"]');
         tweets.forEach(tweet => filterTwitterContent(tweet));
     } else if (isYouTube) {
         filterYouTubeContent();
+    }
+}
+
+function applyGrayscaleStyle(enabled) {
+    let styleEl = document.getElementById('content-filter-grayscale');
+    if (enabled) {
+        if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = 'content-filter-grayscale';
+            styleEl.textContent = `
+                html, body, img, video { 
+                    filter: grayscale(100%) !important; 
+                }
+            `;
+            document.documentElement.appendChild(styleEl);
+        }
+    } else {
+        if (styleEl) {
+            styleEl.remove();
+        }
     }
 }
 
@@ -85,40 +101,43 @@ function filterTwitterContent(tweet) {
 function filterYouTubeContent() {
     // 1. Hide Thumbnails
     if (settings.youtube_hideThumbnails) {
-        const thumbnails = document.querySelectorAll('ytd-thumbnail, yt-image, .ytp-videowall-still-image');
+        const thumbnails = document.querySelectorAll('ytd-thumbnail, yt-image, .ytp-videowall-still-image, #thumbnail, .ytd-moving-thumbnail-renderer');
         thumbnails.forEach(thumb => {
-            thumb.style.visibility = 'hidden';
+            thumb.style.setProperty('visibility', 'hidden', 'important');
+            thumb.style.setProperty('display', 'none', 'important');
         });
     } else {
-        const thumbnails = document.querySelectorAll('ytd-thumbnail, yt-image, .ytp-videowall-still-image');
+        const thumbnails = document.querySelectorAll('ytd-thumbnail, yt-image, .ytp-videowall-still-image, #thumbnail, .ytd-moving-thumbnail-renderer');
         thumbnails.forEach(thumb => {
-            thumb.style.visibility = 'visible';
+            thumb.style.visibility = '';
+            thumb.style.display = '';
         });
     }
 
     // 2. Hide Video Player
     if (settings.youtube_hideVideos) {
-        const players = document.querySelectorAll('ytd-player, #player-container, .html5-video-player');
+        const players = document.querySelectorAll('ytd-player, #player-container, .html5-video-player, video, .html5-main-video');
         players.forEach(player => {
-            player.style.visibility = 'hidden';
+            player.style.setProperty('visibility', 'hidden', 'important');
+            // Don't set display: none as it might break YT's controller logic
         });
     } else {
-        const players = document.querySelectorAll('ytd-player, #player-container, .html5-video-player');
+        const players = document.querySelectorAll('ytd-player, #player-container, .html5-video-player, video, .html5-main-video');
         players.forEach(player => {
-            player.style.visibility = 'visible';
+            player.style.visibility = '';
         });
     }
 
-    // 3. Keyword Filtering (Videos in feed/sidebar)
+    // 3. Keyword Filtering (Improved targeting for various layout types)
     if (settings.youtube_keywords && settings.youtube_keywords.length > 0) {
-        const videoItems = document.querySelectorAll('ytd-video-renderer, ytd-rich-item-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer');
+        const videoItems = document.querySelectorAll('ytd-video-renderer, ytd-rich-item-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer, ytd-playlist-renderer');
         videoItems.forEach(item => {
-            const titleElement = item.querySelector('#video-title');
+            const titleElement = item.querySelector('#video-title, #video-title-link, .title');
             if (titleElement) {
                 const titleText = titleElement.innerText.toLowerCase();
                 const shouldHide = settings.youtube_keywords.some(keyword => titleText.includes(keyword.toLowerCase()));
                 if (shouldHide) {
-                    item.style.display = 'none';
+                    item.style.setProperty('display', 'none', 'important');
                 } else {
                     item.style.display = '';
                 }
@@ -128,6 +147,7 @@ function filterYouTubeContent() {
 }
 
 // --- Combined Observer ---
+let filterTimeout;
 const observer = new MutationObserver((mutations) => {
     if (isTwitter) {
         mutations.forEach((mutation) => {
@@ -142,8 +162,11 @@ const observer = new MutationObserver((mutations) => {
             });
         });
     } else if (isYouTube) {
-        // Debounce or just apply filters on any mutation for YT
-        applyFilters();
+        // Use a small debounce to avoid excessive calls on heavy YT mutations
+        if (filterTimeout) clearTimeout(filterTimeout);
+        filterTimeout = setTimeout(() => {
+            filterYouTubeContent();
+        }, 100);
     }
 });
 
